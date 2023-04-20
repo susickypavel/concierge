@@ -25,6 +25,7 @@ gotrue==1.0.0
 greenlet==2.0.2
 h11==0.14.0
 hikari==2.0.0.dev118
+hikari-lightbulb==2.3.3
 httpcore==0.16.3
 httpx==0.23.3
 humanfriendly==10.0

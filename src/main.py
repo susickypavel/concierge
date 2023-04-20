@@ -1,22 +1,26 @@
-import hikari
 import os
+import lightbulb
+
 from dotenv import load_dotenv
+from hikari import Intents
 
 load_dotenv()
 
 token = os.environ.get("DISCORD_BOT_TOKEN")
 
-bot = hikari.GatewayBot(token=token)
+bot_intents = (
+        Intents.GUILD_MESSAGES |
+        Intents.MESSAGE_CONTENT
+)
+
+bot = lightbulb.BotApp(token=token, prefix="!", intents=bot_intents)
 
 
-@bot.listen()
-async def ping(event: hikari.GuildMessageCreateEvent) -> None:
-    if not event.is_human:
-        return
+@bot.command
+@lightbulb.command("ping", "checks the bot is alive")
+@lightbulb.implements(lightbulb.PrefixCommand)
+async def ping(ctx: lightbulb.Context) -> None:
+    await ctx.respond("Pong!")
 
-    me = bot.get_me()
-
-    if me.id in event.message.user_mentions_ids:
-        await event.message.respond("Pong!")
 
 bot.run()
