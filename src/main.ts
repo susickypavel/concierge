@@ -1,11 +1,17 @@
 import { Client, Collection, Events, GatewayIntentBits } from "discord.js"
 import { config } from "dotenv"
 
+import commands from "./commands/"
+
 config()
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
 client.commands = new Collection();
+
+commands.forEach((command) => {
+    client.commands.set(command.data.name, command);
+})
 
 client.on(Events.ClientReady, () => {
     console.log(`Logged in as ${client.user?.tag}!`);

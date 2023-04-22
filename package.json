@@ -11,9 +11,10 @@
   "scripts": {
     "dev": "nodemon",
     "build:dev": "esbuild src/main.ts --outfile=build/main.js --bundle --platform=node --packages=external",
-    "build:prod": "esbuild src/main.ts --outfile=build/main.js --bundle --platform=node",
+    "build:prod": "esbuild src/main.ts --outfile=build/main.js --bundle --platform=node --minify",
     "build:run": "node build/main.js",
-    "tsc:check": "tsc --noEmit"
+    "tsc:check": "tsc --noEmit",
+    "deploy:commands": "ts-node scripts/deploy-commands.ts"
   },
   "dependencies": {
     "discord.js": "^14.9.0",
