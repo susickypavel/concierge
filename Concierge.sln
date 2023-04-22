@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot", "Bot\Bot.csproj", "{8CFC213B-9F0D-4DC9-A1D5-6AE76FF4CBFF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8CFC213B-9F0D-4DC9-A1D5-6AE76FF4CBFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CFC213B-9F0D-4DC9-A1D5-6AE76FF4CBFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CFC213B-9F0D-4DC9-A1D5-6AE76FF4CBFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CFC213B-9F0D-4DC9-A1D5-6AE76FF4CBFF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
