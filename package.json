@@ -1,12 +1,17 @@
 {
   "name": "concierge",
   "scripts": {
-    "dev": "",
+    "dev": "ts-node src/main.ts",
     "build": "esbuild src/main.ts"
   },
   "dependencies": {
     "discord.js": "^14.9.0",
+    "dotenv": "^16.0.3",
     "esbuild": "^0.17.17"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
   },
   "license": "MIT"
 }

@@ -1,4 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js"
+import { config } from "dotenv"
+
+config()
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent] });
 
@@ -14,4 +17,4 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-client.login("");
+client.login(process.env.DISCORD_BOT_TOKEN);
