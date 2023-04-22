@@ -6,7 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config => config.AddUserSecrets<Program>())
     .ConfigureServices(
-        (_, services) => services.AddHostedService<DiscordClientService>()
+        (_, services) =>
+        {
+            services.AddHostedService<DiscordClientService>();
+        }
     )
     .Build();
 

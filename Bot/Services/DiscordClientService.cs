@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using System.Reflection;
+using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -8,27 +10,53 @@ namespace Bot.Services;
 
 public class DiscordClientService : IHostedService
 {
-    private readonly DiscordSocketClient _client;
+    private DiscordSocketClient Client { get; }
+    
     private readonly string? _token;
     private readonly ILogger<DiscordClientService> _logger;
-    
-    public DiscordClientService(IConfiguration config, ILogger<DiscordClientService> logger)
+    private readonly IServiceProvider _services;
+    private readonly InteractionService _interaction;
+
+    public DiscordClientService(IConfiguration config, ILogger<DiscordClientService> logger, IServiceProvider services)
     {
         _token = config["Discord:Token"];
-        _client = new DiscordSocketClient();
-        _client.Log += Log;
         _logger = logger;
+        _services = services;
+        
+        Client = new DiscordSocketClient();
+        Client.Log += Log;
+        Client.Ready += OnReady;
+        
+        _interaction = new InteractionService(Client);
+    }
+
+    private async Task OnReady()
+    {
+        await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+        
+        await _interaction.RegisterCommandsGloballyAsync();
+        await _interaction.AddCommandsToGuildAsync(926788615252639774, true);
+
+        Client.InteractionCreated += OnInteractionAsync;
+    }
+
+    private async Task OnInteractionAsync(SocketInteraction arg)
+    {
+        _logger.LogInformation("Interaction created");
+        
+        var ctx = new SocketInteractionContext(Client, arg);
+        await _interaction.ExecuteCommandAsync(ctx, _services);
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _client.LoginAsync(TokenType.Bot, _token);
-        await _client.StartAsync();
+        await Client.LoginAsync(TokenType.Bot, _token);
+        await Client.StartAsync();
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _client.LogoutAsync();
+        await Client.LogoutAsync();
     }
     
     private Task Log(LogMessage arg)
