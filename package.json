@@ -2,7 +2,8 @@
   "name": "concierge",
   "scripts": {
     "dev": "ts-node src/main.ts",
-    "build": "esbuild src/main.ts"
+    "build": "esbuild src/main.ts",
+    "tsc:check": "tsc --noEmit"
   },
   "dependencies": {
     "discord.js": "^14.9.0",
