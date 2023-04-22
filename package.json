@@ -1,0 +1,12 @@
+{
+  "name": "concierge",
+  "scripts": {
+    "dev": "",
+    "build": "esbuild src/main.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.9.0",
+    "esbuild": "^0.17.17"
+  },
+  "license": "MIT"
+}
