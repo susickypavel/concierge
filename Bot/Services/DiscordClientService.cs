@@ -27,6 +27,7 @@ public class DiscordClientService : IHostedService
         Client = new DiscordSocketClient(new DiscordSocketConfig {
             GatewayIntents = GatewayIntents.None
         });
+        
         Client.Log += Log;
         Client.Ready += OnReady;
         Client.InteractionCreated += OnInteractionAsync;
@@ -81,7 +82,7 @@ public class DiscordClientService : IHostedService
                     _logger.LogCritical("SlashCommand parse error");
                     break;
                 case null:
-                    _logger.LogCritical("SlashCommand aws unsuccessful but no error was provided");
+                    _logger.LogCritical("SlashCommand was unsuccessful but no error was provided");
                     break;
                 default:
                     _logger.LogCritical("SlashCommand unknown error");
