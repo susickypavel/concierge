@@ -4,4 +4,4 @@
 
 ### Environment variables
 
--  `dotnet user-secrets set "Discord:Token" "TOKEN"`
+-  `dotnet user-secrets set "DISCORD_TOKEN" "TOKEN"`

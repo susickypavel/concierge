@@ -53,7 +53,7 @@ public class MusicPlatformUrl : TypeConverter<(MusicPlatform, Uri)>
         if (!Uri.TryCreate(option.Value.ToString(), UriKind.Absolute, out var result))
         {
             return Task.FromResult(TypeConverterResult.FromError(InteractionCommandError.ConvertFailed,
-                $"Parametr `{option.Value}` není validní URL."));
+                $"Parametr `{option.Value}` není validní URL"));
         }
 
         var platform = GetPlatform(result.Host);
