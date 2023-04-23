@@ -14,7 +14,7 @@ public class UrlConverter : TypeConverter<Uri>
         }
 
         return Task.FromResult(TypeConverterResult.FromError(InteractionCommandError.ConvertFailed,
-            $"Value {option.Value} cannot be converted to {nameof(UriBuilder)}"));
+            $"Parametr `{option.Value}` není validní URL."));
     }
 
     public override ApplicationCommandOptionType GetDiscordType()

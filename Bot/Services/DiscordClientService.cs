@@ -27,6 +27,7 @@ public class DiscordClientService : IHostedService
         Client = new DiscordSocketClient();
         Client.Log += Log;
         Client.Ready += OnReady;
+        Client.InteractionCreated += OnInteractionAsync;
         
         _interaction = new InteractionService(Client);
     }
@@ -39,10 +40,39 @@ public class DiscordClientService : IHostedService
         
         await _interaction.RegisterCommandsGloballyAsync();
         await _interaction.AddCommandsToGuildAsync(926788615252639774, true);
-
-        Client.InteractionCreated += OnInteractionAsync;
+        
+        _interaction.SlashCommandExecuted += OnSlashCommandExecuted;
     }
 
+    private async Task OnSlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, IResult arg3)
+    {
+        if (!arg3.IsSuccess)
+        {
+            switch (arg3.Error)
+            {
+                // TODO: Look into these
+                // case InteractionCommandError.UnmetPrecondition:
+                //     await arg2.Interaction.RespondAsync($"Unmet Precondition: {arg3.ErrorReason}");
+                //     break;
+                // case InteractionCommandError.UnknownCommand:
+                //     await arg2.Interaction.RespondAsync("Unknown command");
+                //     break;
+                // case InteractionCommandError.BadArgs:
+                //     await arg2.Interaction.RespondAsync("Invalid number or arguments");
+                //     break;
+                // case InteractionCommandError.Exception:
+                //     await arg2.Interaction.RespondAsync($"Command exception: {arg3.ErrorReason}");
+                //     break;
+                // case InteractionCommandError.Unsuccessful:
+                //     await arg2.Interaction.RespondAsync("Command could not be executed");
+                //     break;
+                case InteractionCommandError.ConvertFailed:
+                    await arg2.Interaction.RespondAsync(arg3.ErrorReason, ephemeral: true);
+                    break;
+            }
+        }
+    }
+    
     private async Task OnInteractionAsync(SocketInteraction arg)
     {
         var ctx = new SocketInteractionContext(Client, arg);
