@@ -34,7 +34,7 @@ public class DiscordClientService : IHostedService
 
     private async Task OnReady()
     {
-        _interaction.AddTypeConverter<Uri>(new UrlConverter());
+        _interaction.AddTypeConverter<(MusicPlatform,Uri)>(new MusicPlatformUrl());
 
         await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         
