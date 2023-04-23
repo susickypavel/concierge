@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Bot.TypeConverters;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -32,6 +33,8 @@ public class DiscordClientService : IHostedService
 
     private async Task OnReady()
     {
+        _interaction.AddTypeConverter<Uri>(new UrlConverter());
+
         await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         
         await _interaction.RegisterCommandsGloballyAsync();
@@ -42,8 +45,6 @@ public class DiscordClientService : IHostedService
 
     private async Task OnInteractionAsync(SocketInteraction arg)
     {
-        _logger.LogInformation("Interaction created");
-        
         var ctx = new SocketInteractionContext(Client, arg);
         await _interaction.ExecuteCommandAsync(ctx, _services);
     }

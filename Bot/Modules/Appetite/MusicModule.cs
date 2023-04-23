@@ -5,8 +5,8 @@ namespace Bot.Modules.Appetite;
 public class MusicModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("echo", "Echo an input")]
-    public async Task Echo(string input)
+    public async Task Echo(Uri input)
     {
-        await RespondAsync(input);
+        await RespondAsync(input.Host);
     }
 }
