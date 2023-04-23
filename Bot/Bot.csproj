@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
-        <PublishReadyToRun>true</PublishReadyToRun>
+        <!--        <PublishSingleFile>true</PublishSingleFile>-->
+        <!--        <PublishReadyToRun>true</PublishReadyToRun>-->
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>

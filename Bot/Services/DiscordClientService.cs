@@ -17,12 +17,14 @@ public class DiscordClientService : IHostedService
     private readonly ILogger<DiscordClientService> _logger;
     private readonly IServiceProvider _services;
     private readonly InteractionService _interaction;
+    private readonly IHostApplicationLifetime _lifetime;
 
-    public DiscordClientService(IConfiguration config, ILogger<DiscordClientService> logger, IServiceProvider services)
+    public DiscordClientService(IConfiguration config, ILogger<DiscordClientService> logger, IServiceProvider services, IHostApplicationLifetime lifetime)
     {
         _token = config["DISCORD_TOKEN"];
         _logger = logger;
         _services = services;
+        _lifetime = lifetime;
 
         Client = new DiscordSocketClient(new DiscordSocketConfig {
             GatewayIntents = GatewayIntents.AllUnprivileged
@@ -99,8 +101,18 @@ public class DiscordClientService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await Client.LoginAsync(TokenType.Bot, _token);
-        await Client.StartAsync();
+        try
+        {
+            TokenUtils.ValidateToken(TokenType.Bot, _token);
+            
+            await Client.LoginAsync(TokenType.Bot, _token, false);
+            await Client.StartAsync();
+        }
+        catch
+        {
+            _logger.LogError("Supplied token was invalid. Stopping application");
+            _lifetime.StopApplication();
+        }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -110,7 +122,7 @@ public class DiscordClientService : IHostedService
 
     private Task Log(LogMessage arg)
     {
-        _logger.Log(ConvertLogSeverityToLevel(arg.Severity), "{ArgMessage}", arg.Message);
+        _logger.Log(ConvertLogSeverityToLevel(arg.Severity), "{ArgMessage}", arg.Message ?? arg.Exception.Message);
         return Task.CompletedTask;
     }
 
