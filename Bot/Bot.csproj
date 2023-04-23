@@ -2,12 +2,15 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
+        <PublishReadyToRun>true</PublishReadyToRun>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
-      <UserSecretsId>9a5d0027-6ce5-4d30-bfbf-2b4a26e51625</UserSecretsId>
-  </PropertyGroup>
+        <UserSecretsId>9a5d0027-6ce5-4d30-bfbf-2b4a26e51625</UserSecretsId>
+    </PropertyGroup>
 
     <ItemGroup>
       <Content Include="..\.dockerignore">

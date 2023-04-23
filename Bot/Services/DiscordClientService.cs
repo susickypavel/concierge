@@ -25,7 +25,7 @@ public class DiscordClientService : IHostedService
         _services = services;
 
         Client = new DiscordSocketClient(new DiscordSocketConfig {
-            GatewayIntents = GatewayIntents.None
+            GatewayIntents = GatewayIntents.AllUnprivileged
         });
         
         Client.Log += Log;
