@@ -11,7 +11,7 @@ namespace Bot.Services;
 
 public class DiscordClientService : IHostedService
 {
-    private DiscordSocketClient Client { get; }
+    private readonly DiscordSocketClient _client;
 
     private readonly string? _token;
     private readonly ILogger<DiscordClientService> _logger;
@@ -19,26 +19,26 @@ public class DiscordClientService : IHostedService
     private readonly InteractionService _interaction;
     private readonly IHostApplicationLifetime _lifetime;
 
-    public DiscordClientService(IConfiguration config, ILogger<DiscordClientService> logger, IServiceProvider services, IHostApplicationLifetime lifetime)
+    public DiscordClientService(DiscordSocketClient client, IConfiguration config, ILogger<DiscordClientService> logger, IServiceProvider services, IHostApplicationLifetime lifetime)
     {
         _token = config["DISCORD_TOKEN"];
         _logger = logger;
         _services = services;
         _lifetime = lifetime;
 
-        Client = new DiscordSocketClient(new DiscordSocketConfig {
-            GatewayIntents = GatewayIntents.AllUnprivileged
-        });
+        _client = client;
         
-        Client.Log += Log;
-        Client.Ready += OnReady;
-        Client.InteractionCreated += OnInteractionAsync;
+        _client.Log += Log;
+        _client.Ready += OnReady;
+        _client.InteractionCreated += OnInteractionAsync;
 
-        _interaction = new InteractionService(Client);
+        _interaction = new InteractionService(_client);
     }
 
     private async Task OnReady()
     {
+        // TODO: handle thrown errors
+        
         _interaction.AddTypeConverter<(MusicPlatform, Uri)>(new MusicPlatformUrl());
 
         await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
@@ -95,7 +95,7 @@ public class DiscordClientService : IHostedService
 
     private async Task OnInteractionAsync(SocketInteraction arg)
     {
-        var ctx = new SocketInteractionContext(Client, arg);
+        var ctx = new SocketInteractionContext(_client, arg);
         await _interaction.ExecuteCommandAsync(ctx, _services);
     }
 
@@ -105,8 +105,8 @@ public class DiscordClientService : IHostedService
         {
             TokenUtils.ValidateToken(TokenType.Bot, _token);
             
-            await Client.LoginAsync(TokenType.Bot, _token, false);
-            await Client.StartAsync();
+            await _client.LoginAsync(TokenType.Bot, _token, false);
+            await _client.StartAsync();
         }
         catch
         {
@@ -117,7 +117,7 @@ public class DiscordClientService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await Client.LogoutAsync();
+        await _client.LogoutAsync();
     }
 
     private Task Log(LogMessage arg)
