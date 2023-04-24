@@ -9,6 +9,8 @@ using Victoria.Responses.Search;
 namespace Bot.Modules;
 
 // TODO: Seek command
+// TODO: Remove from queue command
+// TODO: Shuffle command
 
 public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 {
@@ -26,25 +28,25 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (_lavaNode.HasPlayer(Context.Guild))
         {
-            await RespondAsync("I'm already connected to a voice channel!");
+            await RespondAsync("I'm already connected to a voice channel!", ephemeral: true);
             return;
         }
 
         var voiceState = Context.User as IVoiceState;
         if (voiceState?.VoiceChannel == null)
         {
-            await RespondAsync("You must be connected to a voice channel!");
+            await RespondAsync("You must be connected to a voice channel!", ephemeral: true);
             return;
         }
 
         try
         {
             await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
-            await RespondAsync($"Joined {voiceState.VoiceChannel.Name}!");
+            await RespondAsync($"Joined {voiceState.VoiceChannel.Name}!", ephemeral: true);
         }
         catch (Exception exception)
         {
-            await RespondAsync(exception.Message);
+            await RespondAsync(exception.Message, ephemeral: true);
         }
     }
 
@@ -53,25 +55,25 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to any voice channels!");
+            await RespondAsync("I'm not connected to any voice channels!", ephemeral: true);
             return;
         }
 
-        var voiceChannel = (Context.User as IVoiceState).VoiceChannel ?? player.VoiceChannel;
+        var voiceChannel = (Context.User as IVoiceState)?.VoiceChannel ?? player.VoiceChannel;
         if (voiceChannel == null)
         {
-            await RespondAsync("Not sure which voice channel to disconnect from.");
+            await RespondAsync("Not sure which voice channel to disconnect from.", ephemeral: true);
             return;
         }
 
         try
         {
             await _lavaNode.LeaveAsync(voiceChannel);
-            await RespondAsync($"I've left {voiceChannel.Name}!");
+            await RespondAsync($"I've left {voiceChannel.Name}!", ephemeral: true);
         }
         catch (Exception exception)
         {
-            await RespondAsync(exception.Message);
+            await RespondAsync(exception.Message, ephemeral: true);
         }
     }
 
@@ -80,7 +82,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
-            await RespondAsync("Please provide search terms.");
+            await RespondAsync("Please provide search terms.", ephemeral: true);
             return;
         }
 
@@ -89,18 +91,18 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             var voiceState = Context.User as IVoiceState;
             if (voiceState?.VoiceChannel == null)
             {
-                await RespondAsync("You must be connected to a voice channel!");
+                await RespondAsync("You must be connected to a voice channel!", ephemeral: true);
                 return;
             }
 
             try
             {
                 player = await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
-                await RespondAsync($"Joined {voiceState.VoiceChannel.Name}!");
+                await RespondAsync($"Joined {voiceState.VoiceChannel.Name}!", ephemeral: true);
             }
             catch (Exception exception)
             {
-                await RespondAsync(exception.Message);
+                await RespondAsync(exception.Message, ephemeral: true);
             }
         }
 
@@ -109,21 +111,21 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             searchQuery);
         if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
         {
-            await RespondAsync($"I wasn't able to find anything for `{searchQuery}`.");
+            await RespondAsync($"I wasn't able to find anything for `{searchQuery}`.", ephemeral: true);
             return;
         }
 
         if (!string.IsNullOrWhiteSpace(searchResponse.Playlist.Name))
         {
             player.Vueue.Enqueue(searchResponse.Tracks);
-            await RespondAsync($"Enqueued {searchResponse.Tracks.Count} songs.");
+            await RespondAsync($"Enqueued {searchResponse.Tracks.Count} songs.", ephemeral: true);
         }
         else
         {
             var track = searchResponse.Tracks.FirstOrDefault();
             player.Vueue.Enqueue(track);
 
-            await RespondAsync($"Enqueued {track?.Title}");
+            await RespondAsync($"Enqueued {track?.Title}", ephemeral: true);
         }
 
         if (player.PlayerState is PlayerState.Playing or PlayerState.Paused)
@@ -140,24 +142,24 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.");
+            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Playing)
         {
-            await RespondAsync("I cannot pause when I'm not playing anything!");
+            await RespondAsync("I cannot pause when I'm not playing anything!", ephemeral: true);
             return;
         }
 
         try
         {
             await player.PauseAsync();
-            await RespondAsync($"Paused: {player.Track.Title}");
+            await RespondAsync($"Paused: {player.Track.Title}", ephemeral: true);
         }
         catch (Exception exception)
         {
-            await RespondAsync(exception.Message);
+            await RespondAsync(exception.Message, ephemeral: true);
         }
     }
 
@@ -166,24 +168,24 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.");
+            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Paused)
         {
-            await RespondAsync("I cannot resume when I'm not playing anything!");
+            await RespondAsync("I cannot resume when I'm not playing anything!", ephemeral: true);
             return;
         }
 
         try
         {
             await player.ResumeAsync();
-            await RespondAsync($"Resumed: {player.Track.Title}");
+            await RespondAsync($"Resumed: {player.Track.Title}", ephemeral: true);
         }
         catch (Exception exception)
         {
-            await RespondAsync(exception.Message);
+            await RespondAsync(exception.Message, ephemeral: true);
         }
     }
 
@@ -192,24 +194,32 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.");
+            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Playing)
         {
-            await RespondAsync("Woaaah there, I can't skip when nothing is playing.");
+            await RespondAsync("Woaaah there, I can't skip when nothing is playing.", ephemeral: true);
             return;
         }
         
         try
         {
-            var (skipped, currenTrack) = await player.SkipAsync();
-            await RespondAsync($"Skipped: {skipped.Title}\nNow Playing: {currenTrack.Title}");
+            if (player.Vueue.Count > 0)
+            {
+                await player.SkipAsync();
+            }
+            else
+            {
+                await player.StopAsync();
+            }
+            
+            await RespondAsync($"Skipped", ephemeral: true);
         }
         catch (Exception exception)
         {
-            await RespondAsync(exception.Message);
+            await RespondAsync(exception.Message, ephemeral: true);
         }
     }
 
@@ -218,18 +228,18 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.");
+            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
             return;
         }
 
         try
         {
             await player.SetVolumeAsync(volume);
-            await RespondAsync($"I've changed the player volume to {volume}.");
+            await RespondAsync($"I've changed the player volume to {volume}.", ephemeral: true);
         }
         catch (Exception exception)
         {
-            await RespondAsync(exception.Message);
+            await RespondAsync(exception.Message, ephemeral: true);
         }
     }
 
@@ -238,13 +248,13 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.");
+            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Playing)
         {
-            await RespondAsync("Woaaah there, I'm not playing any tracks.");
+            await RespondAsync("Woaaah there, I'm not playing any tracks.", ephemeral: true);
             return;
         }
 
