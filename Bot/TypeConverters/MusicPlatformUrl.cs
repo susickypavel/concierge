@@ -15,8 +15,8 @@ public class MusicPlatformUrl : TypeConverter<(MusicPlatform, Uri)>
 {
     private readonly Dictionary<Regex, MusicPlatform> _platforms = new()
     {
-        {new Regex(@"(^|\.)youtube\.com$"), MusicPlatform.YouTube},
-        {new Regex(@"(^|\.)spotify\.com$"), MusicPlatform.Spotify},
+        {new Regex(@"(youtube\.com)|(youtu\.be)"), MusicPlatform.YouTube},
+        {new Regex(@"(spotify\.com)|(spoti\.fi)"), MusicPlatform.Spotify},
     };
 
     private readonly Dictionary<MusicPlatform, IEnumerable<string>> _trackingParameters = new()
