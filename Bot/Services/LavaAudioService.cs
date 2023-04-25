@@ -27,8 +27,6 @@ public class LavaAudioService
         _lavaNode.OnWebSocketClosed += OnWebSocketClosedAsync;
         _lavaNode.OnTrackStuck += OnTrackStuckAsync;
         _lavaNode.OnTrackException += OnTrackExceptionAsync;
-        
-        _logger.LogInformation("LavaAudioService is running");
     }
 
     private Task OnTrackExceptionAsync(TrackExceptionEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
@@ -51,11 +49,7 @@ public class LavaAudioService
 
     private Task OnWebSocketClosedAsync(WebSocketClosedEventArg arg)
     {
-        // TODO: Disconnect after close
-        // if (_lavaNode.TryGetPlayer(arg.Guild, out var player))
-        // {
-        //     await _lavaNode.LeaveAsync(player.VoiceChannel);
-        // }
+        _logger.LogDebug("WebSocket closed");
         
         return Task.CompletedTask;
     }
@@ -72,11 +66,10 @@ public class LavaAudioService
 
     private async Task OnTrackStartAsync(TrackStartEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
-        _logger.LogInformation("Track {TrackTitle} started", arg.Track.Title);
+        _logger.LogDebug("Track '{TrackTitle}' started", arg.Track.Title);
 
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
-            // .AddField("Requested by", "Dummy", true)
             .AddField("Duration", arg.Track.Duration, true)
             .WithTitle(arg.Track.Title)
             .WithAuthor(arg.Track.Author)
@@ -94,6 +87,8 @@ public class LavaAudioService
 
     private async Task OnTrackEndAsync(TrackEndEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
+        _logger.LogDebug("Track '{TrackTitle}' ended", arg.Track.Title);
+        
         if (arg.Player.Vueue.TryDequeue(out var nextTrack))
         {
             await arg.Player.PlayAsync(nextTrack);
