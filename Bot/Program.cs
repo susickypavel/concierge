@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Victoria;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -29,6 +30,10 @@ var host = Host.CreateDefaultBuilder(args)
             services.AddSingleton<LavaAudioService>();
         }
     )
+    .ConfigureLogging(logging =>
+    {
+        logging.SetMinimumLevel(LogLevel.Information);
+    })
     .Build();
 
 host.Run();
