@@ -1,5 +1,6 @@
 ﻿using Bot.Services;
 using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -16,13 +17,16 @@ var host = Host.CreateDefaultBuilder(args)
                 GatewayIntents = GatewayIntents.AllUnprivileged
             });
 
+            var interactionService = new InteractionService(discordSocketClient);
+
             services.AddSingleton(discordSocketClient);
+            services.AddSingleton(interactionService);
             services.AddLavaNode(nodeConfig =>
             {
                 nodeConfig.Authorization = "fastasfuckboi";
             });
-            services.AddSingleton<LavaAudioService>();
             services.AddHostedService<DiscordClientService>();
+            services.AddSingleton<LavaAudioService>();
         }
     )
     .Build();

@@ -1,4 +1,5 @@
-﻿using Bot.Services;
+﻿using System.Text;
+using Bot.Services;
 using Discord;
 using Discord.Interactions;
 using Victoria;
@@ -77,55 +78,54 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
+    // TODO: Parameter validation
+    
     [SlashCommand("play", "Bot plays a song.")]
     public async Task PlayAsync(string searchQuery)
     {
-        if (string.IsNullOrWhiteSpace(searchQuery))
-        {
-            await RespondAsync("Please provide search terms.", ephemeral: true);
-            return;
-        }
-
+        await DeferAsync(ephemeral: true);
+        
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
             var voiceState = Context.User as IVoiceState;
+            
             if (voiceState?.VoiceChannel == null)
             {
-                await RespondAsync("You must be connected to a voice channel!", ephemeral: true);
+                await FollowupAsync("You must be connected to a voice channel!", ephemeral: true);
                 return;
             }
 
             try
             {
                 player = await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
-                await RespondAsync($"Joined {voiceState.VoiceChannel.Name}!", ephemeral: true);
             }
             catch (Exception exception)
             {
-                await RespondAsync(exception.Message, ephemeral: true);
+                await FollowupAsync(exception.Message, ephemeral: true);
             }
         }
 
         var searchResponse = await _lavaNode.SearchAsync(
             Uri.IsWellFormedUriString(searchQuery, UriKind.Absolute) ? SearchType.Direct : SearchType.YouTube,
             searchQuery);
+        
         if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
         {
-            await RespondAsync($"I wasn't able to find anything for `{searchQuery}`.", ephemeral: true);
+            await FollowupAsync($"I wasn't able to find anything for `{searchQuery}`.", ephemeral: true);
             return;
         }
 
         if (!string.IsNullOrWhiteSpace(searchResponse.Playlist.Name))
         {
             player.Vueue.Enqueue(searchResponse.Tracks);
-            await RespondAsync($"Enqueued {searchResponse.Tracks.Count} songs.", ephemeral: true);
+            await FollowupAsync($"Enqueued {searchResponse.Tracks.Count} songs.", ephemeral: true);
         }
         else
         {
             var track = searchResponse.Tracks.FirstOrDefault();
             player.Vueue.Enqueue(track);
 
-            await RespondAsync($"Enqueued {track?.Title}", ephemeral: true);
+            await FollowupAsync($"Enqueued {track?.Title}", ephemeral: true);
         }
 
         if (player.PlayerState is PlayerState.Playing or PlayerState.Paused)
@@ -134,6 +134,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         player.Vueue.TryDequeue(out var lavaTrack);
+        
         await player.PlayAsync(lavaTrack);
     }
 
@@ -266,6 +267,30 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             .WithTitle($"Now Playing: {track.Title}")
             .WithImageUrl(artwork)
             .WithFooter($"{track.Position}/{track.Duration}");
+
+        await RespondAsync(embed: embed.Build());
+    }
+
+    [SlashCommand("queue", "Shows current queue")]
+    public async Task ShowQueue()
+    {
+        if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
+        {
+            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
+            return;
+        }
+
+        var embed = new EmbedBuilder()
+            .WithTitle("Queue");
+
+        var queueList = new StringBuilder("");
+
+        foreach (var lavaTrack in player.Vueue)
+        {
+            queueList.AppendLine($"- {lavaTrack.Title}");
+        }
+
+        embed.WithDescription(queueList.ToString());
 
         await RespondAsync(embed: embed.Build());
     }
