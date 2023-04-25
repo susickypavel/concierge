@@ -43,11 +43,7 @@ public class DiscordClientService : IHostedService
 
         await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
-        #if DEBUG
-            _logger.LogInformation("Registering commands to a guild:");
-            await _interaction.AddCommandsToGuildAsync(926788615252639774, true);
-            await _interaction.RegisterCommandsToGuildAsync(926788615252639774);
-        #else
+        #if !DEBUG
             _logger.LogInformation("Registering commands globally:");
             await _interaction.AddCommandsGloballyAsync(true);
             await _interaction.RegisterCommandsGloballyAsync();
