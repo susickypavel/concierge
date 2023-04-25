@@ -12,17 +12,23 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
     {
         var embed =
             new EmbedBuilder()
-                .WithUrl(link.url.OriginalString)
-                .WithTitle(link.url.OriginalString)
-                .WithFooter(Context.User.Username, Context.User.GetAvatarUrl())
                 .AddField("Added by", Context.User.Mention, true)
                 .AddField("Platform", link.platform.ToString(), true)
                 .WithColor(GetEmbedColor(link.platform))
                 .Build();
 
-        await RespondAsync(embed: embed);
+        await RespondAsync(link.url.OriginalString);
 
         var message = await GetOriginalResponseAsync();
+
+        if (Context.Channel.GetChannelType() == ChannelType.Text)
+        {
+            var textChannel = (Context.Channel as ITextChannel)!;
+            
+            var thread = await textChannel.CreateThreadAsync(name: link.url.OriginalString, message: message);
+            
+            await thread.SendMessageAsync(embed: embed);
+        }
 
         await message.AddReactionAsync(new Emoji("👍"));
         await message.AddReactionAsync(new Emoji("👎"));
