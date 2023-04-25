@@ -282,12 +282,17 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 
         var embed = new EmbedBuilder()
             .WithTitle("Queue");
+        
+        var queueList = new StringBuilder($@"Now playing: [{player.Track.Title}]({player.Track.Url})
 
-        var queueList = new StringBuilder("");
+");
 
+        var i = 1;
+        
         foreach (var lavaTrack in player.Vueue)
         {
-            queueList.AppendLine($"- {lavaTrack.Title}");
+            queueList.AppendLine($"{i}. [{lavaTrack.Title}]({lavaTrack.Url})");
+            i++;
         }
 
         embed.WithDescription(queueList.ToString());

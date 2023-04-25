@@ -92,8 +92,8 @@ public class LavaAudioService
         await arg.Player.TextChannel.SendMessageAsync(embed: embed.Build());
     }
 
-    private static Task OnTrackEndAsync(TrackEndEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
+    private async Task OnTrackEndAsync(TrackEndEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
-        return Task.CompletedTask;
+        _logger.LogInformation("Track ended");
     }
 }
