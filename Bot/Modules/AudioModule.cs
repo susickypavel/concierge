@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Bot.Entities;
 using Bot.Services;
 using Discord;
 using Discord.Interactions;
@@ -117,15 +118,22 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 
         if (!string.IsNullOrWhiteSpace(searchResponse.Playlist.Name))
         {
-            player.Vueue.Enqueue(searchResponse.Tracks);
+            player.Vueue.Enqueue(searchResponse.Tracks.Select(track => new ExtendedLavaTrack(track, Context.User)));
             await FollowupAsync($"Enqueued {searchResponse.Tracks.Count} songs.", ephemeral: true);
         }
         else
         {
             var track = searchResponse.Tracks.FirstOrDefault();
-            player.Vueue.Enqueue(track);
 
-            await FollowupAsync($"Enqueued {track?.Title}", ephemeral: true);
+            if (track != null)
+            {
+                player.Vueue.Enqueue(new ExtendedLavaTrack(track, Context.User));
+                await FollowupAsync($"Enqueued {track?.Title}", ephemeral: true);
+            }
+            else
+            {
+                await FollowupAsync("This should not happen, ever. lol");
+            }
         }
 
         if (player.PlayerState is PlayerState.Playing or PlayerState.Paused)
@@ -283,7 +291,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         var embed = new EmbedBuilder()
             .WithTitle("Queue");
         
-        var queueList = new StringBuilder($@"Now playing: [{player.Track.Title}]({player.Track.Url})
+        var queueList = new StringBuilder($@"**Now playing: [{player.Track.Title}]({player.Track.Url})**
 
 ");
 
@@ -291,7 +299,12 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         
         foreach (var lavaTrack in player.Vueue)
         {
-            queueList.AppendLine($"{i}. [{lavaTrack.Title}]({lavaTrack.Url})");
+            queueList.Append($"{i}. [{lavaTrack.Title}]({lavaTrack.Url})");
+            if (lavaTrack is ExtendedLavaTrack extendedLavaTrack)
+            {
+                queueList.Append($" by {extendedLavaTrack.QueuedBy.Mention}");
+            }
+            queueList.AppendLine();
             i++;
         }
 
