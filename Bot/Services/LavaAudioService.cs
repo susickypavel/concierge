@@ -94,6 +94,9 @@ public class LavaAudioService
 
     private async Task OnTrackEndAsync(TrackEndEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
-        _logger.LogInformation("Track ended");
+        if (arg.Player.Vueue.TryDequeue(out var nextTrack))
+        {
+            await arg.Player.PlayAsync(nextTrack);
+        }
     }
 }
