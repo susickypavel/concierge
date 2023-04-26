@@ -3,7 +3,8 @@ Description=Lavalink
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/java -jar /root/Lavalink.jar
+WorkingDirectory=/root
+ExecStart=/usr/bin/java -jar Lavalink.jar
 
 Restart=always
 

@@ -34,6 +34,8 @@ var host = Host.CreateDefaultBuilder(args)
                 {
                     BufferSize = 4096
                 };
+                nodeConfig.Hostname = "localhost";
+                nodeConfig.Port = 2333;
             });
             
             services.AddHostedService<DiscordClientService>();
