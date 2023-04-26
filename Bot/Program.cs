@@ -11,6 +11,7 @@ using Victoria;
 using Victoria.WebSocket;
 
 var host = Host.CreateDefaultBuilder(args)
+    .UseSystemd()
     .ConfigureAppConfiguration(config => config.AddUserSecrets<Program>())
     .ConfigureServices(
         (_, services) =>
