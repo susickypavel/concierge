@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Node;
@@ -7,18 +9,16 @@ using Victoria.Player;
 
 namespace Bot.Services;
 
-public class LavaAudioService
+public class LavaAudioService : IHostedService
 {
     private readonly LavaNode _lavaNode;
     private readonly ILogger<LavaAudioService> _logger;
-
-    public LavaAudioService(LavaNode lavaNode, ILogger<LavaAudioService> logger)
+    public LavaAudioService(ILogger<LavaAudioService> logger, LavaNode lavaNode, DiscordSocketClient client)
     {
         _lavaNode = lavaNode;
         _logger = logger;
-
-        // TODO: Error handling
-        _lavaNode.ConnectAsync();
+        
+        client.Ready += Connect;
 
         _lavaNode.OnTrackEnd += OnTrackEndAsync;
         _lavaNode.OnTrackStart += OnTrackStartAsync;
@@ -47,14 +47,12 @@ public class LavaAudioService
         return arg.Player.TextChannel.SendMessageAsync($"{arg.Track} has been requeued because it got stuck.");
     }
 
-    private Task OnWebSocketClosedAsync(WebSocketClosedEventArg arg)
+    private static Task OnWebSocketClosedAsync(WebSocketClosedEventArg arg)
     {
-        _logger.LogDebug("WebSocket closed");
-
         return Task.CompletedTask;
     }
 
-    private Task OnStatsReceivedAsync(StatsEventArg arg)
+    private static Task OnStatsReceivedAsync(StatsEventArg arg)
     {
         return Task.CompletedTask;
     }
@@ -92,6 +90,27 @@ public class LavaAudioService
         if (arg.Player.Vueue.TryDequeue(out var nextTrack))
         {
             await arg.Player.PlayAsync(nextTrack);
+        }
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    private async Task Connect()
+    {
+        await _lavaNode.ConnectAsync();
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        foreach (var player in _lavaNode.Players)
+        {
+            if (_lavaNode.IsConnected)
+            {
+                await _lavaNode.LeaveAsync(player.VoiceChannel);
+            }
         }
     }
 }
