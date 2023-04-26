@@ -1,4 +1,5 @@
 ﻿using Bot.Services;
+using Bot.Services.Handlers;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Victoria;
+using Victoria.WebSocket;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config => config.AddUserSecrets<Program>())
@@ -20,14 +22,22 @@ var host = Host.CreateDefaultBuilder(args)
                                  GatewayIntents.GuildMessageReactions |
                                  GatewayIntents.GuildVoiceStates
             });
-
-            var interactionService = new InteractionService(discordSocketClient);
-
+            
             services.AddSingleton(discordSocketClient);
-            services.AddSingleton(interactionService);
-            services.AddLavaNode(nodeConfig => { nodeConfig.Authorization = "fastasfuckboi"; });
+            services.AddSingleton<InteractionService>();
+            
+            services.AddLavaNode(nodeConfig =>
+            {
+                nodeConfig.Authorization = "fastasfuckboi";
+                nodeConfig.SocketConfiguration = new WebSocketConfiguration
+                {
+                    BufferSize = 1
+                };
+            });
+            
             services.AddHostedService<DiscordClientService>();
-            services.AddSingleton<LavaAudioService>();
+            services.AddHostedService<InteractionHandler>();
+            services.AddHostedService<LavaAudioService>();
         }
     )
     .ConfigureLogging(logging => { logging.SetMinimumLevel(LogLevel.Information); })

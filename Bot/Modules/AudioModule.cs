@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Bot.Entities;
-using Bot.Services;
 using Discord;
 using Discord.Interactions;
 using Victoria;
@@ -17,12 +16,10 @@ namespace Bot.Modules;
 public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly LavaNode _lavaNode;
-    private readonly LavaAudioService _lavaAudioService;
 
-    public AudioModule(LavaNode lavaNode, LavaAudioService lavaAudioService)
+    public AudioModule(LavaNode lavaNode)
     {
         _lavaNode = lavaNode;
-        _lavaAudioService = lavaAudioService;
     }
 
     [SlashCommand("join", "Bot joins the voice channel")]
@@ -287,6 +284,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         var embed = new EmbedBuilder()
+            .WithColor(new Color(255, 0, 0))
             .WithTitle("Queue");
 
         var descriptionBuilder = new StringBuilder();
