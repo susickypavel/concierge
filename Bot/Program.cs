@@ -15,7 +15,7 @@ var host = Host.CreateDefaultBuilder(args)
         {
             var discordSocketClient = new DiscordSocketClient(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.AllUnprivileged
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.GuildVoiceStates
             });
 
             var interactionService = new InteractionService(discordSocketClient);
