@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Victoria.Node;
 
 namespace Bot.Services;
 
@@ -18,16 +19,19 @@ public class DiscordClientService : IHostedService
     private readonly IServiceProvider _services;
     private readonly InteractionService _interaction;
     private readonly IHostApplicationLifetime _lifetime;
+    private readonly LavaNode _lavaNode;
 
-    public DiscordClientService(DiscordSocketClient client, IConfiguration config, ILogger<DiscordClientService> logger, IServiceProvider services, IHostApplicationLifetime lifetime)
+    public DiscordClientService(LavaNode lavaNode, DiscordSocketClient client, IConfiguration config,
+        ILogger<DiscordClientService> logger, IServiceProvider services, IHostApplicationLifetime lifetime)
     {
         _token = config["DISCORD_TOKEN"];
         _logger = logger;
         _services = services;
         _lifetime = lifetime;
+        _lavaNode = lavaNode;
 
         _client = client;
-        
+
         _client.Log += Log;
         _client.Ready += OnReady;
         _client.InteractionCreated += OnInteractionAsync;
@@ -38,16 +42,16 @@ public class DiscordClientService : IHostedService
     private async Task OnReady()
     {
         // TODO: handle thrown errors
-        
+
         _interaction.AddTypeConverter<(MusicPlatform, Uri)>(new MusicPlatformUrl());
 
         await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
-        #if !DEBUG
+#if !DEBUG
             _logger.LogInformation("Registering commands globally:");
             await _interaction.AddCommandsGloballyAsync(true);
             await _interaction.RegisterCommandsGloballyAsync();
-        #endif
+#endif
 
         _interaction.SlashCommandExecuted += OnSlashCommandExecuted;
     }
@@ -100,7 +104,7 @@ public class DiscordClientService : IHostedService
         try
         {
             TokenUtils.ValidateToken(TokenType.Bot, _token);
-            
+
             await _client.LoginAsync(TokenType.Bot, _token, false);
             await _client.StartAsync();
         }
@@ -113,6 +117,14 @@ public class DiscordClientService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        foreach (var player in _lavaNode.Players)
+        {
+            if (_lavaNode.IsConnected)
+            {
+                await _lavaNode.LeaveAsync(player.VoiceChannel);
+            }
+        }
+
         await _client.LogoutAsync();
     }
 
