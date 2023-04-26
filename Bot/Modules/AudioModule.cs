@@ -79,17 +79,15 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    // TODO: Parameter validation
-    
     [SlashCommand("play", "Bot plays a song.")]
     public async Task PlayAsync(string searchQuery)
     {
         await DeferAsync(ephemeral: true);
-        
+
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
             var voiceState = Context.User as IVoiceState;
-            
+
             if (voiceState?.VoiceChannel == null)
             {
                 await FollowupAsync("You must be connected to a voice channel!", ephemeral: true);
@@ -109,7 +107,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         var searchResponse = await _lavaNode.SearchAsync(
             Uri.IsWellFormedUriString(searchQuery, UriKind.Absolute) ? SearchType.Direct : SearchType.YouTube,
             searchQuery);
-        
+
         if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
         {
             await FollowupAsync($"I wasn't able to find anything for `{searchQuery}`.", ephemeral: true);
@@ -142,7 +140,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         player.Vueue.TryDequeue(out var lavaTrack);
-        
+
         await player.PlayAsync(lavaTrack);
     }
 
@@ -212,7 +210,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync("Woaaah there, I can't skip when nothing is playing.", ephemeral: true);
             return;
         }
-        
+
         try
         {
             if (player.Vueue.Count > 0)
@@ -223,7 +221,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             {
                 await player.StopAsync();
             }
-            
+
             await RespondAsync($"Skipped", ephemeral: true);
         }
         catch (Exception exception)
@@ -290,25 +288,38 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 
         var embed = new EmbedBuilder()
             .WithTitle("Queue");
-        
-        var queueList = new StringBuilder($@"**Now playing: [{player.Track.Title}]({player.Track.Url})**
 
-");
+        var descriptionBuilder = new StringBuilder();
 
-        var i = 1;
-        
-        foreach (var lavaTrack in player.Vueue)
+        if (player.PlayerState != PlayerState.None && player.Track != null)
         {
-            queueList.Append($"{i}. [{lavaTrack.Title}]({lavaTrack.Url})");
-            if (lavaTrack is ExtendedLavaTrack extendedLavaTrack)
-            {
-                queueList.Append($" by {extendedLavaTrack.QueuedBy.Mention}");
-            }
-            queueList.AppendLine();
-            i++;
+            descriptionBuilder.AppendLine($@"**Now playing: [{player.Track.Title}]({player.Track.Url})**
+");
         }
 
-        embed.WithDescription(queueList.ToString());
+        if (player.Vueue.Count <= 0)
+        {
+            descriptionBuilder.AppendLine("**Queue is empty :(**");
+        }
+        else
+        {
+            var i = 1;
+
+            foreach (var lavaTrack in player.Vueue)
+            {
+                descriptionBuilder.Append($"{i}. [{lavaTrack.Title}]({lavaTrack.Url})");
+
+                if (lavaTrack is ExtendedLavaTrack extendedLavaTrack)
+                {
+                    descriptionBuilder.Append($" by {extendedLavaTrack.QueuedBy.Mention}");
+                }
+
+                descriptionBuilder.AppendLine();
+                i++;
+            }
+        }
+
+        embed.WithDescription(descriptionBuilder.ToString());
 
         await RespondAsync(embed: embed.Build());
     }
