@@ -1,0 +1,11 @@
+﻿[Unit]
+Description=Lavalink
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/java -jar /root/Lavalink.jar
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

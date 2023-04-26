@@ -1,0 +1,12 @@
+﻿[Unit]
+Description=Discord Bot
+After=network.target
+
+[Service]
+Environment="DISCORD_TOKEN="
+ExecStart=/root/Bot
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
