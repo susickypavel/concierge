@@ -38,7 +38,7 @@ public class MusicPlatformUrl : TypeConverter<(MusicPlatform, Uri)>
         {
             return url.Query;
         }
-    
+
         var updatedQueryParams = url.Query
             .TrimStart('?')
             .Split('&')

@@ -24,9 +24,9 @@ public class MusicModule : InteractionModuleBase<SocketInteractionContext>
         if (Context.Channel.GetChannelType() == ChannelType.Text)
         {
             var textChannel = (Context.Channel as ITextChannel)!;
-            
+
             var thread = await textChannel.CreateThreadAsync(name: link.url.OriginalString, message: message);
-            
+
             await thread.SendMessageAsync(embed: embed);
         }
 

@@ -11,4 +11,4 @@ services:
     volumes:
       - ./Lavalink/configuration.yml:/opt/Lavalink/application.yml
     environment:
-      JAVA_TOOL_OPTIONS: -XX:+ExitOnOutOfMemoryError -Xmx512M
+      JAVA_TOOL_OPTIONS: -XX:+ExitOnOutOfMemoryError -Xmx512MS

@@ -32,7 +32,7 @@ public class LavaAudioService
     private Task OnTrackExceptionAsync(TrackExceptionEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
         _logger.LogWarning("Track {TrackTitle} thrown an exception", arg.Track.Title);
-        
+
         arg.Player.Vueue.Enqueue(arg.Track);
 
         return arg.Player.TextChannel.SendMessageAsync($"{arg.Track} has been requeued because it threw an exception.");
@@ -41,7 +41,7 @@ public class LavaAudioService
     private Task OnTrackStuckAsync(TrackStuckEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
         _logger.LogWarning("Track {TrackTitle} is stuck", arg.Track.Title);
-        
+
         arg.Player.Vueue.Enqueue(arg.Track);
 
         return arg.Player.TextChannel.SendMessageAsync($"{arg.Track} has been requeued because it got stuck.");
@@ -50,7 +50,7 @@ public class LavaAudioService
     private Task OnWebSocketClosedAsync(WebSocketClosedEventArg arg)
     {
         _logger.LogDebug("WebSocket closed");
-        
+
         return Task.CompletedTask;
     }
 
@@ -88,7 +88,7 @@ public class LavaAudioService
     private async Task OnTrackEndAsync(TrackEndEventArg<LavaPlayer<LavaTrack>, LavaTrack> arg)
     {
         _logger.LogDebug("Track '{TrackTitle}' ended", arg.Track.Title);
-        
+
         if (arg.Player.Vueue.TryDequeue(out var nextTrack))
         {
             await arg.Player.PlayAsync(nextTrack);

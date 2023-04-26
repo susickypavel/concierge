@@ -15,25 +15,22 @@ var host = Host.CreateDefaultBuilder(args)
         {
             var discordSocketClient = new DiscordSocketClient(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.GuildVoiceStates
+                GatewayIntents = GatewayIntents.Guilds |
+                                 GatewayIntents.GuildMessages |
+                                 GatewayIntents.GuildMessageReactions |
+                                 GatewayIntents.GuildVoiceStates
             });
 
             var interactionService = new InteractionService(discordSocketClient);
 
             services.AddSingleton(discordSocketClient);
             services.AddSingleton(interactionService);
-            services.AddLavaNode(nodeConfig =>
-            {
-                nodeConfig.Authorization = "fastasfuckboi";
-            });
+            services.AddLavaNode(nodeConfig => { nodeConfig.Authorization = "fastasfuckboi"; });
             services.AddHostedService<DiscordClientService>();
             services.AddSingleton<LavaAudioService>();
         }
     )
-    .ConfigureLogging(logging =>
-    {
-        logging.SetMinimumLevel(LogLevel.Information);
-    })
+    .ConfigureLogging(logging => { logging.SetMinimumLevel(LogLevel.Information); })
     .Build();
 
 host.Run();
