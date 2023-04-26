@@ -32,7 +32,7 @@ var host = Host.CreateDefaultBuilder(args)
                 nodeConfig.Authorization = "fastasfuckboi";
                 nodeConfig.SocketConfiguration = new WebSocketConfiguration
                 {
-                    BufferSize = 1
+                    BufferSize = 4096
                 };
             });
             
