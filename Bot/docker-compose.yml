@@ -9,6 +9,4 @@ services:
       - "2333:2333"
       - "2333:2333/udp"
     volumes:
-      - ./Lavalink/configuration.yml:/opt/Lavalink/application.yml
-    environment:
-      JAVA_TOOL_OPTIONS: -XX:+ExitOnOutOfMemoryError -Xmx512MS
+      - ./Resources/application.yml:/opt/Lavalink/application.yml
