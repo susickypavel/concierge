@@ -247,18 +247,18 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("np", "Shows current song it plays")]
+    [SlashCommand("now-playing", "Co teď hraje?")]
     public async Task NowPlayingAsync()
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Playing)
         {
-            await RespondAsync("Woaaah there, I'm not playing any tracks.", ephemeral: true);
+            await RespondAsync("`Nic nehraje, pump it up?`", ephemeral: true);
             return;
         }
 
@@ -266,12 +266,14 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         var artwork = await track.FetchArtworkAsync();
 
         var embed = new EmbedBuilder()
-            .WithAuthor(track.Author, Context.Client.CurrentUser.GetAvatarUrl(), track.Url)
-            .WithTitle($"Now Playing: {track.Title}")
+            .WithAuthor(track.Author, null, track.Url)
+            .WithTitle(track.Title)
+            .WithUrl(track.Url)
             .WithImageUrl(artwork)
-            .WithFooter($"{track.Position}/{track.Duration}");
+            .WithFooter($"{track.Position:hh\\:mm\\:ss} / {track.Duration}")
+            .WithColor(new Color(255, 0, 0));
 
-        await RespondAsync(embed: embed.Build());
+        await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 
     [SlashCommand("queue", "Shows current queue")]
