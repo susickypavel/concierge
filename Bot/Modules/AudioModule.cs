@@ -15,9 +15,9 @@ namespace Bot.Modules;
 
 public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly LavaNode _lavaNode;
+    private readonly LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> _lavaNode;
 
-    public AudioModule(LavaNode lavaNode)
+    public AudioModule(LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> lavaNode)
     {
         _lavaNode = lavaNode;
     }
@@ -122,7 +122,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 
             if (track != null)
             {
-                player.Vueue.Enqueue(new ExtendedLavaTrack(track, Context.User));
+                player.TrackQueue.Enqueue(new ExtendedLavaTrack(track, Context.User));
                 await FollowupAsync($"Enqueued {track?.Title}", ephemeral: true);
             }
             else
@@ -136,7 +136,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        player.Vueue.TryDequeue(out var lavaTrack);
+        player.TrackQueue.TryDequeue(out var lavaTrack);
 
         await player.PlayAsync(lavaTrack);
     }
