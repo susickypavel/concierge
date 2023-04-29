@@ -273,7 +273,8 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             .WithUrl(track.Url)
             .WithImageUrl(artwork)
             .WithFooter($"{track.Position:hh\\:mm\\:ss} / {track.Duration}")
-            .WithColor(new Color(255, 0, 0));
+            .WithColor(new Color(255, 0, 0))
+            .AddField("Requested by", track.QueuedBy.Mention);
 
         await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
@@ -299,7 +300,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 ");
         }
 
-        if (player.Vueue.Count <= 0)
+        if (player.TrackQueue.IsEmpty())
         {
             descriptionBuilder.AppendLine("**Queue is empty :(**");
         }
@@ -307,22 +308,16 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         {
             var i = 1;
 
-            foreach (var lavaTrack in player.Vueue)
+            foreach (var track in player.TrackQueue)
             {
-                descriptionBuilder.Append($"{i}. [{lavaTrack.Title}]({lavaTrack.Url})");
-
-                if (lavaTrack is ExtendedLavaTrack extendedLavaTrack)
-                {
-                    descriptionBuilder.Append($" by {extendedLavaTrack.QueuedBy.Mention}");
-                }
-
-                descriptionBuilder.AppendLine();
+                descriptionBuilder.Append($"{i}. [{track.Title}]({track.Url})");
+                descriptionBuilder.AppendLine($" by {track.QueuedBy.Mention}");
                 i++;
             }
         }
 
         embed.WithDescription(descriptionBuilder.ToString());
 
-        await RespondAsync(embed: embed.Build());
+        await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 }

@@ -1,6 +1,8 @@
+using System.Collections;
+
 namespace Bot.Entities;
 
-public class TrackQueue
+public class TrackQueue : IEnumerable<ExtendedLavaTrack>
 {
     private readonly LinkedList<ExtendedLavaTrack> _tracks = new();
 
@@ -17,6 +19,11 @@ public class TrackQueue
     public void Clear()
     {
         _tracks.Clear();
+    }
+
+    public bool IsEmpty()
+    {
+        return _tracks.Count < 1;
     }
 
     public void Enqueue(ExtendedLavaTrack track, bool top = false)
@@ -46,7 +53,7 @@ public class TrackQueue
 
     public bool TryDequeue(out ExtendedLavaTrack? o)
     {
-        if (_tracks.Count < 1)
+        if (IsEmpty())
         {
             o = default;
             return false;
@@ -64,5 +71,17 @@ public class TrackQueue
         o = nextTrack;
 
         return true;
+    }
+
+    public IEnumerator<ExtendedLavaTrack> GetEnumerator()
+    {
+        for (var node = _tracks.First; node != null; node = node.Next) {
+            yield return node.Value;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }
