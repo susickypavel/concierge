@@ -1,4 +1,5 @@
-﻿using Bot.Services;
+﻿using Bot.Entities;
+using Bot.Services;
 using Bot.Services.Handlers;
 using Discord;
 using Discord.Interactions;
@@ -27,7 +28,7 @@ var host = Host.CreateDefaultBuilder(args)
             services.AddSingleton(discordSocketClient);
             services.AddSingleton<InteractionService>();
             
-            services.AddLavaNode(nodeConfig =>
+            services.AddLavaNode<ExtendedLavaPlayer, ExtendedLavaTrack>(nodeConfig =>
             {
                 nodeConfig.Authorization = "fastasfuckboi";
                 nodeConfig.SocketConfiguration = new WebSocketConfiguration
