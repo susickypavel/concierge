@@ -2,6 +2,7 @@
 using Bot.Entities;
 using Discord;
 using Discord.Interactions;
+using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Node;
 using Victoria.Player;
@@ -16,9 +17,11 @@ namespace Bot.Modules;
 public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> _lavaNode;
+    private readonly ILogger<AudioModule> _logger;
 
-    public AudioModule(LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> lavaNode)
+    public AudioModule(LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> lavaNode, ILogger<AudioModule> logger)
     {
+        _logger = logger;
         _lavaNode = lavaNode;
     }
 
@@ -77,7 +80,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("play", "Bot plays a song.")]
-    public async Task PlayAsync(string searchQuery)
+    public async Task PlayAsync(string searchQuery, bool top = false)
     {
         await DeferAsync(ephemeral: true);
 
@@ -87,7 +90,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 
             if (voiceState?.VoiceChannel == null)
             {
-                await FollowupAsync("You must be connected to a voice channel!", ephemeral: true);
+                await FollowupAsync("`Musíš být připojený do voice.`", ephemeral: true);
                 return;
             }
 
@@ -105,40 +108,39 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             Uri.IsWellFormedUriString(searchQuery, UriKind.Absolute) ? SearchType.Direct : SearchType.YouTube,
             searchQuery);
 
-        if (searchResponse.Status is SearchStatus.LoadFailed or SearchStatus.NoMatches)
+        switch (searchResponse.Status)
         {
-            await FollowupAsync($"I wasn't able to find anything for `{searchQuery}`.", ephemeral: true);
-            return;
+            case SearchStatus.PlaylistLoaded:
+                player.TrackQueue.Enqueue(searchResponse.Tracks.Select(track => new ExtendedLavaTrack(track, Context.User)));
+                await FollowupAsync($"`Přidal jsem celý playlist {searchResponse.Tracks.Count} videí.`", ephemeral: true);
+                break;
+            case SearchStatus.TrackLoaded:
+                var nextTrack = new ExtendedLavaTrack(searchResponse.Tracks.First(), Context.User);
+                player.TrackQueue.Enqueue(nextTrack, top);
+                await FollowupAsync($"`Přidal jsem {nextTrack.Title}.`", ephemeral: true);
+                break;
+            case SearchStatus.LoadFailed:
+                _logger.LogError("Couldn't load '{SearchQuery}', Exception: {ExceptionMessage}", searchQuery, searchResponse.Exception.Message);
+                await FollowupAsync($"`Nepodařilo se mi načíst '{searchQuery}'.`", ephemeral: true);
+                return;
+            case SearchStatus.NoMatches:
+                await FollowupAsync($"`Nic takového jsem nenašel :(`", ephemeral: true);
+                return;
+            default:
+                _logger.LogError("Something went wrong, Exception: {ExceptionMessage}", searchResponse.Exception.Message);
+                await FollowupAsync("`Něco se mi nepovedlo, zalogováno.`");
+                return;
         }
-
-        if (!string.IsNullOrWhiteSpace(searchResponse.Playlist.Name))
-        {
-            player.Vueue.Enqueue(searchResponse.Tracks.Select(track => new ExtendedLavaTrack(track, Context.User)));
-            await FollowupAsync($"Enqueued {searchResponse.Tracks.Count} songs.", ephemeral: true);
-        }
-        else
-        {
-            var track = searchResponse.Tracks.FirstOrDefault();
-
-            if (track != null)
-            {
-                player.TrackQueue.Enqueue(new ExtendedLavaTrack(track, Context.User));
-                await FollowupAsync($"Enqueued {track?.Title}", ephemeral: true);
-            }
-            else
-            {
-                await FollowupAsync("This should not happen, ever. lol");
-            }
-        }
-
+        
         if (player.PlayerState is PlayerState.Playing or PlayerState.Paused)
         {
             return;
         }
 
-        player.TrackQueue.TryDequeue(out var lavaTrack);
-
-        await player.PlayAsync(lavaTrack);
+        if (player.TrackQueue.TryDequeue(out var currentTrack))
+        {
+            await player.PlayAsync(currentTrack);
+        }
     }
 
     [SlashCommand("pause", "Pauses current song")]
