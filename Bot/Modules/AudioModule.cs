@@ -79,7 +79,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("play", "Bot plays a song.")]
+    [SlashCommand("play", "Přidá video do fronty")]
     public async Task PlayAsync(string searchQuery, bool top = false)
     {
         await DeferAsync(ephemeral: true);
@@ -136,8 +136,8 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         {
             return;
         }
-
-        if (player.TrackQueue.TryDequeue(out var currentTrack))
+        
+        if (player.TrackQueue.TryDequeue(out var currentTrack) && currentTrack != null)
         {
             await player.PlayAsync(currentTrack);
         }

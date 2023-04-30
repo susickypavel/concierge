@@ -89,7 +89,7 @@ public class LavaAudioService : IHostedService
     {
         _logger.LogDebug("Track '{TrackTitle}' ended", arg.Track.Title);
 
-        if (arg.Player.TrackQueue.TryDequeue(out var nextTrack))
+        if (arg.Player.TrackQueue.TryDequeue(out var nextTrack) && nextTrack != null)
         {
             await arg.Player.PlayAsync(nextTrack);
         }
