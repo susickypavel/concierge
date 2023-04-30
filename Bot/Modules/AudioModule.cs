@@ -115,6 +115,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
                 await FollowupAsync($"`Přidal jsem celý playlist {searchResponse.Tracks.Count} videí.`", ephemeral: true);
                 break;
             case SearchStatus.TrackLoaded:
+            case SearchStatus.SearchResult:
                 var nextTrack = new ExtendedLavaTrack(searchResponse.Tracks.First(), Context.User);
                 player.TrackQueue.Enqueue(nextTrack, top);
                 await FollowupAsync($"`Přidal jsem {nextTrack.Title}.`", ephemeral: true);
