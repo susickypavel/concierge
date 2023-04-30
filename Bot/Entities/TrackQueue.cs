@@ -50,25 +50,23 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
         }
     }
 
-    public bool TryDequeue(out ExtendedLavaTrack? o)
+    public bool TryDequeue(out ExtendedLavaTrack? nextTrack)
     {
+        nextTrack = default;
+        
         if (IsEmpty())
         {
-            o = default;
             return false;
         }
 
-        var nextTrack = _tracks.First?.Value;
+        nextTrack = _tracks.First?.Value;
         _tracks.RemoveFirst();
 
         if (nextTrack == null)
         {
-            o = default;
             return false;
         }
-
-        o = nextTrack;
-
+        
         return true;
     }
 
