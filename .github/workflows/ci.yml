@@ -13,7 +13,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-        
+
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "7.x.x"
@@ -21,3 +21,18 @@ jobs:
       - run: dotnet restore
 
       - run: dotnet build --no-restore
+  
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.x.x"
+
+      - run: dotnet restore
+
+      - run: dotnet test --no-restore
