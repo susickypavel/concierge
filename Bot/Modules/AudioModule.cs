@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Bot.Entities;
+using Bot.Handlers;
 using Discord;
 using Discord.Interactions;
 using Microsoft.Extensions.Logging;
@@ -196,33 +197,39 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("skip", "Skips current song.")]
-    public async Task SkipAsync()
+    [SlashCommand("skip", "Přeskočí video")]
+    public async Task SkipAsync([Summary("pozice", "Číslo pořadí videa pro přeskočení")] [Autocomplete(typeof(QueueAutocompleteHandler))] int position = -1)
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Playing)
         {
-            await RespondAsync("Woaaah there, I can't skip when nothing is playing.", ephemeral: true);
+            await RespondAsync("`Nemůžu přeskočit video, když nic nehraju.`", ephemeral: true);
+            return;
+        }
+
+        if (position >= player.TrackQueue.Count())
+        {
+            await RespondAsync("`Pozice není z rozsahu.`");
             return;
         }
 
         try
         {
-            if (player.Vueue.Count > 0)
-            {
-                await player.SkipAsync();
-            }
-            else
+            if (position < 0)
             {
                 await player.StopAsync();
             }
+            else
+            {
+                player.TrackQueue.RemoveAt(position);
+            }
 
-            await RespondAsync($"Skipped", ephemeral: true);
+            await RespondAsync($"`Přeskočeno.`", ephemeral: true);
         }
         catch (Exception exception)
         {

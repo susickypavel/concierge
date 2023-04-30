@@ -11,9 +11,23 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
         throw new NotImplementedException();
     }
 
-    public void RemoveAt()
+    public void RemoveAt(int index)
     {
-        throw new NotImplementedException();
+        if (index < 0 || index >= _tracks.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+        
+        for (var currentNode = _tracks.First; currentNode != null; currentNode = currentNode.Next)
+        {
+            if (index == 0)
+            {
+                _tracks.Remove(currentNode);
+                break;
+            }
+            
+            index--;
+        }
     }
 
     public void Clear()
