@@ -28,11 +28,8 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
 
     public void Enqueue(ExtendedLavaTrack track, bool top = false)
     {
-        if (track == null)
-        {
-            throw new ArgumentNullException(nameof(track));
-        }
-        
+        if (track == null) throw new ArgumentNullException(nameof(track));
+
         if (top)
         {
             _tracks.AddFirst(track);
@@ -45,6 +42,8 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
 
     public void Enqueue(IEnumerable<ExtendedLavaTrack> tracks)
     {
+        if (tracks == null) throw new ArgumentNullException(nameof(tracks));
+
         foreach (var extendedLavaTrack in tracks)
         {
             Enqueue(extendedLavaTrack);
@@ -58,7 +57,7 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
             o = default;
             return false;
         }
-        
+
         var nextTrack = _tracks.First?.Value;
         _tracks.RemoveFirst();
 
@@ -75,7 +74,8 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
 
     public IEnumerator<ExtendedLavaTrack> GetEnumerator()
     {
-        for (var node = _tracks.First; node != null; node = node.Next) {
+        for (var node = _tracks.First; node != null; node = node.Next)
+        {
             yield return node.Value;
         }
     }
