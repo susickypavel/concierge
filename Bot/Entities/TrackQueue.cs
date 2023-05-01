@@ -5,10 +5,28 @@ namespace Bot.Entities;
 public class TrackQueue : IEnumerable<ExtendedLavaTrack>
 {
     private readonly LinkedList<ExtendedLavaTrack> _tracks = new();
+    private readonly Random _random = new();
 
     public void Shuffle()
     {
-        throw new NotImplementedException();
+        var tracksCount = _tracks.Count;
+
+        if (tracksCount < 2) return;
+
+        var shadow = _tracks.ToArray();
+        
+        _tracks.Clear();
+
+        for (var i = tracksCount - 1; i > 0; i--)
+        {
+            var r = _random.Next(i + 1);
+            (shadow[i], shadow[r]) = (shadow[r], shadow[i]);
+        }
+        
+        foreach (var track in shadow)
+        {
+            _tracks.AddFirst(track);
+        }
     }
 
     public void RemoveAt(int index)
@@ -30,16 +48,11 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
         }
     }
 
-    public void Clear()
-    {
-        _tracks.Clear();
-    }
-
     public bool IsEmpty()
     {
         return _tracks.Count < 1;
     }
-
+    
     public void Enqueue(ExtendedLavaTrack track, bool top = false)
     {
         if (track == null) throw new ArgumentNullException(nameof(track));

@@ -11,10 +11,6 @@ using Victoria.Responses.Search;
 
 namespace Bot.Modules;
 
-// TODO: Seek command
-// TODO: Remove from queue command
-// TODO: Shuffle command
-
 public class AudioModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> _lavaNode;
@@ -327,5 +323,19 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         embed.WithDescription(descriptionBuilder.ToString());
 
         await RespondAsync(embed: embed.Build(), ephemeral: true);
+    }
+
+    [SlashCommand("shuffle", "Zamíchá videa ve frontě.")]
+    public async Task Shuffle()
+    {
+        if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
+        {
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
+            return;
+        }
+        
+        player.TrackQueue.Shuffle();
+
+        await RespondAsync("`Fronta zamíchána.`", ephemeral: true);
     }
 }
