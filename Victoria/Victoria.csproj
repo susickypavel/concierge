@@ -22,6 +22,7 @@
 			- WebSocket buffer fix
 			- THANK YOU TO THE CONTRIBUTORS FOR HELPING WITH THE ISSUES AND FIXES YALL THE OGS
 		</PackageReleaseNotes>
+		<WarningLevel>0</WarningLevel>
 	</PropertyGroup>
 
 	<ItemGroup>
