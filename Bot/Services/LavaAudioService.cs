@@ -66,7 +66,7 @@ public class LavaAudioService : IHostedService
     private async Task OnTrackStartAsync(TrackStartEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
         _logger.LogDebug("Track '{TrackTitle}' started", arg.Track.Title);
-
+        
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
             .AddField("Duration", arg.Track.Duration, true)

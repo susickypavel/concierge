@@ -103,4 +103,26 @@ public class TrackQueueTest
         
         Assert.IsFalse(queue.Contains(trackToDelete));
     }
+
+    [TestMethod]
+    public void Should_Shuffle_Deck()
+    {
+        const int count = 10;
+        
+        var queue = new TrackQueue();
+
+        for (var i = 0; i < count; i++)
+        {
+            queue.Enqueue(GetTrack());
+        }
+
+        var originalTracks = queue.ToList();
+        
+        Assert.AreEqual(count, queue.Count(), "The queue should contain 10 tracks.");
+
+        queue.Shuffle();
+        
+        Assert.IsFalse(queue.SequenceEqual(originalTracks), "The shuffled tracks should not be in the same order as the original tracks.");
+        CollectionAssert.AreEquivalent(queue.ToList(), originalTracks, "The shuffled tracks should contain the same tracks as the original tracks.");
+    }
 }
