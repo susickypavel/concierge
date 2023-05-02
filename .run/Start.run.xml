@@ -14,6 +14,7 @@
     <option name="PROJECT_KIND" value="DotNetCore" />
     <option name="PROJECT_TFM" value="net7.0" />
     <method v="2">
+      <option name="RunConfigurationTask" enabled="false" run_configuration_name="Services" run_configuration_type="docker-deploy" />
       <option name="Build" />
     </method>
   </configuration>
