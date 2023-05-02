@@ -69,8 +69,8 @@ public class LavaAudioService : IHostedService
         
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
-            .AddField("Duration", arg.Track.Duration, true)
-            .AddField("Requested by", arg.Track.QueuedBy.Mention, true)
+            .AddField("Délka", arg.Track.Duration, true)
+            .AddField("Na přání", arg.Track.QueuedBy.Mention, true)
             .WithTitle(arg.Track.Title)
             .WithAuthor(arg.Track.Author)
             .WithUrl(arg.Track.Url);

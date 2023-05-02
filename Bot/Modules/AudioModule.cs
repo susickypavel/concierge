@@ -22,26 +22,26 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         _lavaNode = lavaNode;
     }
 
-    [SlashCommand("join", "Bot joins the voice channel")]
+    [SlashCommand("join", "Bot se připojí k tobě do voice")]
     public async Task JoinAsync()
     {
         if (_lavaNode.HasPlayer(Context.Guild))
         {
-            await RespondAsync("I'm already connected to a voice channel!", ephemeral: true);
+            await RespondAsync("`Já už tu jsem!`", ephemeral: true);
             return;
         }
 
         var voiceState = Context.User as IVoiceState;
         if (voiceState?.VoiceChannel == null)
         {
-            await RespondAsync("You must be connected to a voice channel!", ephemeral: true);
+            await RespondAsync("`Musíš být v nějakém voice channelu!`", ephemeral: true);
             return;
         }
 
         try
         {
             await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
-            await RespondAsync($"Joined {voiceState.VoiceChannel.Name}!", ephemeral: true);
+            await RespondAsync($"`Už jsem tady zas!`", ephemeral: true);
         }
         catch (Exception exception)
         {
@@ -49,12 +49,12 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("leave", "Bot leaves the voice channel")]
+    [SlashCommand("leave", "Bot odejde z voice")]
     public async Task LeaveAsync()
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to any voice channels!", ephemeral: true);
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
             return;
         }
 
@@ -68,7 +68,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         try
         {
             await _lavaNode.LeaveAsync(voiceChannel);
-            await RespondAsync($"I've left {voiceChannel.Name}!", ephemeral: true);
+            await RespondAsync($"`Tak já jdu.`", ephemeral: true);
         }
         catch (Exception exception)
         {
@@ -115,7 +115,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             case SearchStatus.SearchResult:
                 var nextTrack = new ExtendedLavaTrack(searchResponse.Tracks.First(), Context.User);
                 player.TrackQueue.Enqueue(nextTrack, top);
-                await FollowupAsync($"`Přidal jsem {nextTrack.Title}.`", ephemeral: true);
+                await FollowupAsync($"`Přidal jsem '{nextTrack.Title}'.`", ephemeral: true);
                 break;
             case SearchStatus.LoadFailed:
                 _logger.LogError("Couldn't load '{SearchQuery}', Exception: {ExceptionMessage}", searchQuery, searchResponse.Exception.Message);
@@ -141,25 +141,31 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("pause", "Pauses current song")]
+    [SlashCommand("pause", "Pozastaví přehrávání")]
     public async Task PauseAsync()
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
+            return;
+        }
+
+        if (player.PlayerState == PlayerState.Paused)
+        {
+            await RespondAsync("`To už je zastavený!`", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Playing)
         {
-            await RespondAsync("I cannot pause when I'm not playing anything!", ephemeral: true);
+            await RespondAsync("`Nemůžu zastavit vzduch!`", ephemeral: true);
             return;
         }
 
         try
         {
             await player.PauseAsync();
-            await RespondAsync($"Paused: {player.Track.Title}", ephemeral: true);
+            await RespondAsync($"`Pozastaveno: '{player.Track.Title}'`", ephemeral: true);
         }
         catch (Exception exception)
         {
@@ -167,25 +173,25 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("resume", "Resume playing of current song")]
+    [SlashCommand("resume", "Pustí přehrávání")]
     public async Task ResumeAsync()
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
             return;
         }
 
         if (player.PlayerState != PlayerState.Paused)
         {
-            await RespondAsync("I cannot resume when I'm not playing anything!", ephemeral: true);
+            await RespondAsync("`Nemůžu pustit vzduch!`", ephemeral: true);
             return;
         }
 
         try
         {
             await player.ResumeAsync();
-            await RespondAsync($"Resumed: {player.Track.Title}", ephemeral: true);
+            await RespondAsync($"`Pokračujém v: '{player.Track.Title}'`", ephemeral: true);
         }
         catch (Exception exception)
         {
@@ -233,7 +239,7 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [SlashCommand("volume", "sets bot volume")]
+    [SlashCommand("volume", "Nastaví hlasitost bota <0,100>")]
     public async Task VolumeAsync(ushort volume)
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
@@ -242,10 +248,16 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
+        if (volume > 100)
+        {
+            await RespondAsync("`Hlasitost je mimo rozsah <0,100>.`");
+            return;
+        }
+        
         try
         {
             await player.SetVolumeAsync(volume);
-            await RespondAsync($"I've changed the player volume to {volume}.", ephemeral: true);
+            await RespondAsync($"`Hlasitost změněna na '{volume}%'.`", ephemeral: true);
         }
         catch (Exception exception)
         {
@@ -278,35 +290,35 @@ public class AudioModule : InteractionModuleBase<SocketInteractionContext>
             .WithImageUrl(artwork)
             .WithFooter($"{track.Position:hh\\:mm\\:ss} / {track.Duration}")
             .WithColor(new Color(255, 0, 0))
-            .AddField("Requested by", track.QueuedBy.Mention);
+            .AddField("Na přání", track.QueuedBy.Mention);
 
         await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 
-    [SlashCommand("queue", "Shows current queue")]
+    [SlashCommand("queue", "Zobrazí frontu videí")]
     public async Task ShowQueue()
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
-            await RespondAsync("I'm not connected to a voice channel.", ephemeral: true);
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
             return;
         }
 
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
-            .WithTitle("Queue");
+            .WithTitle("Fronta videí");
 
         var descriptionBuilder = new StringBuilder();
 
         if (player.PlayerState != PlayerState.None && player.Track != null)
         {
-            descriptionBuilder.AppendLine($@"**Now playing: [{player.Track.Title}]({player.Track.Url})**
+            descriptionBuilder.AppendLine($@"**Teď hraje: [{player.Track.Title}]({player.Track.Url})**
 ");
         }
 
         if (player.TrackQueue.IsEmpty())
         {
-            descriptionBuilder.AppendLine("**Queue is empty :(**");
+            descriptionBuilder.AppendLine("**Ve frontě nic není, pump it up!**");
         }
         else
         {
