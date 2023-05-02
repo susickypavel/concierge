@@ -89,12 +89,7 @@ public class TrackQueue : IEnumerable<ExtendedLavaTrack>
         nextTrack = _tracks.First?.Value;
         _tracks.RemoveFirst();
 
-        if (nextTrack == null)
-        {
-            return false;
-        }
-        
-        return true;
+        return nextTrack != null;
     }
 
     public IEnumerator<ExtendedLavaTrack> GetEnumerator()
