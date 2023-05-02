@@ -11,7 +11,6 @@ public class DebugModule : InteractionModuleBase<SocketInteractionContext>
         _interaction = interaction;
     }
     
-    [SlashCommand("commands", "add commands")]
     public async Task RegisterCommands()
     {
         await _interaction.AddCommandsToGuildAsync(926788615252639774, true);

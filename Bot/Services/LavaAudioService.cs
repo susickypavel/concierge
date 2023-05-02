@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Node;
 using Victoria.Node.EventArgs;
+using Victoria.Player;
 
 namespace Bot.Services;
 
@@ -13,12 +14,13 @@ public class LavaAudioService : IHostedService
 {
     private readonly LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> _lavaNode;
     private readonly ILogger<LavaAudioService> _logger;
-    
-    public LavaAudioService(ILogger<LavaAudioService> logger, LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> lavaNode, DiscordSocketClient client)
+
+    public LavaAudioService(ILogger<LavaAudioService> logger, LavaNode<ExtendedLavaPlayer, ExtendedLavaTrack> lavaNode,
+        DiscordSocketClient client)
     {
         _lavaNode = lavaNode;
         _logger = logger;
-        
+
         client.Ready += Connect;
 
         _lavaNode.OnTrackEnd += OnTrackEndAsync;
@@ -30,22 +32,38 @@ public class LavaAudioService : IHostedService
         _lavaNode.OnTrackException += OnTrackExceptionAsync;
     }
 
-    private Task OnTrackExceptionAsync(TrackExceptionEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
+    private async Task OnTrackExceptionAsync(TrackExceptionEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
         _logger.LogWarning("Track {TrackTitle} thrown an exception", arg.Track.Title);
 
-        // arg.Player.TrackQueue.Enqueue(arg.Track);
+        var embed = new EmbedBuilder()
+            .WithTitle("Pozor!")
+            .WithDescription($"Písnička '{arg.Track.Title}' se nepovedla přehrát.")
+            .WithColor(new Color(245, 158, 11));
 
-        return arg.Player.TextChannel.SendMessageAsync($"{arg.Track} has been requeued because it threw an exception.");
+        await arg.Player.TextChannel.SendMessageAsync(embed: embed.Build());
+        
+        if (arg.Player.TrackQueue.TryDequeue(out var nextTrack) && nextTrack != null)
+        {
+            await arg.Player.PlayAsync(nextTrack);
+        }
     }
 
-    private Task OnTrackStuckAsync(TrackStuckEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
+    private async Task OnTrackStuckAsync(TrackStuckEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
         _logger.LogWarning("Track {TrackTitle} is stuck", arg.Track.Title);
 
-        // arg.Player.TrackQueue.Enqueue(arg.Track);
+        var embed = new EmbedBuilder()
+            .WithTitle("Pozor!")
+            .WithDescription($"Písnička '{arg.Track.Title}' se nepovedla přehrát.")
+            .WithColor(new Color(245, 158, 11));
 
-        return arg.Player.TextChannel.SendMessageAsync($"{arg.Track} has been requeued because it got stuck.");
+        await arg.Player.TextChannel.SendMessageAsync(embed: embed.Build());
+        
+        if (arg.Player.TrackQueue.TryDequeue(out var nextTrack) && nextTrack != null)
+        {
+            await arg.Player.PlayAsync(nextTrack);
+        }
     }
 
     private static Task OnWebSocketClosedAsync(WebSocketClosedEventArg arg)
@@ -66,7 +84,7 @@ public class LavaAudioService : IHostedService
     private async Task OnTrackStartAsync(TrackStartEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
         _logger.LogDebug("Track '{TrackTitle}' started", arg.Track.Title);
-        
+
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
             .AddField("Délka", arg.Track.Duration, true)
@@ -89,6 +107,8 @@ public class LavaAudioService : IHostedService
     {
         _logger.LogDebug("Track '{TrackTitle}' ended", arg.Track.Title);
 
+        if (arg.Reason is TrackEndReason.Replaced) return;
+        
         if (arg.Player.TrackQueue.TryDequeue(out var nextTrack) && nextTrack != null)
         {
             await arg.Player.PlayAsync(nextTrack);
