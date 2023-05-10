@@ -58,10 +58,11 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
             return;
         }
-
+        
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
-            .WithTitle("Fronta videí");
+            .WithTitle("Fronta videí")
+            .WithFooter($"{Constants.LoopModeFlags[player.TrackQueue.QueueMode]} Smyčka: {player.TrackQueue.QueueMode}");
 
         var descriptionBuilder = new StringBuilder();
 
@@ -81,8 +82,8 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
 
             foreach (var track in player.TrackQueue)
             {
-                descriptionBuilder.Append($"{i}. [{track.Title}]({track.Url})");
-                descriptionBuilder.AppendLine($" by {track.QueuedBy.Mention}");
+                descriptionBuilder.Append($"`[{i}]` `{track.Title.Trim().AsSpan( 0, 50)}...` [🔗]({track.Url})");
+                descriptionBuilder.AppendLine($" {track.QueuedBy.Mention}");
                 i++;
             }
         }

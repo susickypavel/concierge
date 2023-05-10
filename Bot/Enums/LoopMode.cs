@@ -2,7 +2,7 @@
 
 public enum LoopMode
 {
-    Current,
+    Single,
     All,
     Off
 }
