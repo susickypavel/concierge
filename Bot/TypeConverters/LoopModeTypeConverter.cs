@@ -25,7 +25,7 @@ public class LoopModeTypeConverter : TypeConverter<LoopMode>
         var names = Enum.GetNames(typeof(LoopMode));
 
         var choices = names
-            .Select(name => new ApplicationCommandOptionChoiceProperties {Name = name, Value = name});
+            .Select(name => new ApplicationCommandOptionChoiceProperties {Name = $"{Constants.LoopModeFlags[Enum.Parse<LoopMode>(name)]} {name}", Value = name});
 
         properties.Choices = choices.ToList();
     }

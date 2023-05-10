@@ -8,7 +8,6 @@ using Victoria;
 using Victoria.Node;
 using Victoria.Node.EventArgs;
 using Victoria.Player;
-using Victoria.Responses.Search;
 
 namespace Bot.Services;
 
@@ -109,7 +108,7 @@ public class LavaAudioService : IHostedService
         
         switch (arg.Player.TrackQueue.QueueMode)
         {
-            case LoopMode.Current:
+            case LoopMode.Single:
                 arg.Player.TrackQueue.Enqueue(arg.Track, true);
                 goto case LoopMode.Off;
             case LoopMode.All:
