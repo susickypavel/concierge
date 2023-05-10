@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using Bot.Entities;
+using Bot.Enums;
 using Bot.TypeConverters;
 using Discord;
 using Discord.Interactions;
@@ -73,6 +75,7 @@ public class InteractionHandler : IHostedService
     private async Task OnReady()
     {
         _interaction.AddTypeConverter<(MusicPlatform, Uri)>(new MusicPlatformUrl());
+        _interaction.AddTypeConverter<LoopMode>(new LoopModeTypeConverter());
 
         var loadedModules = await _interaction.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 

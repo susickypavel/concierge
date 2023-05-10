@@ -1,4 +1,5 @@
 ﻿using Bot.Entities;
+using Bot.Enums;
 using Bot.Handlers;
 using Discord;
 using Discord.Interactions;
@@ -54,7 +55,7 @@ public class ControlsModule : InteractionModuleBase<SocketInteractionContext>
                 await FollowupAsync(exception.Message, ephemeral: true);
             }
         }
-
+        
         var searchResponse = await _lavaNode.SearchAsync(
             Uri.IsWellFormedUriString(searchQuery, UriKind.Absolute) ? SearchType.Direct : SearchType.YouTube,
             searchQuery);
@@ -214,5 +215,19 @@ public class ControlsModule : InteractionModuleBase<SocketInteractionContext>
         player.TrackQueue.Shuffle();
 
         await RespondAsync("`Fronta zamíchána.`", ephemeral: true);
+    }
+
+    [SlashCommand("loop", "Nastaví smyčku přehrávání")]
+    public async Task Loop(LoopMode mode)
+    {
+        if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
+        {
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
+            return;
+        }
+
+        player.TrackQueue.QueueMode = mode;
+        
+        await RespondAsync($"`Smyčka nastavena na '{mode}'`", ephemeral: true);
     }
 }

@@ -1,9 +1,12 @@
 using System.Collections;
+using Bot.Enums;
 
 namespace Bot.Entities;
 
 public class TrackQueue : IEnumerable<ExtendedLavaTrack>
 {
+    public LoopMode QueueMode { get; set; } = LoopMode.Off;
+    
     private readonly LinkedList<ExtendedLavaTrack> _tracks = new();
     private readonly Random _random = new();
 
