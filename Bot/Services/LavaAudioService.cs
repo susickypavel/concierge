@@ -1,4 +1,5 @@
 ﻿using Bot.Entities;
+using Bot.Enums;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
@@ -7,6 +8,7 @@ using Victoria;
 using Victoria.Node;
 using Victoria.Node.EventArgs;
 using Victoria.Player;
+using Victoria.Responses.Search;
 
 namespace Bot.Services;
 
@@ -80,11 +82,9 @@ public class LavaAudioService : IHostedService
     {
         return Task.CompletedTask;
     }
-
-    private async Task OnTrackStartAsync(TrackStartEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
+    
+    private static async Task OnTrackStartAsync(TrackStartEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
-        _logger.LogDebug("Track '{TrackTitle}' started", arg.Track.Title);
-
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
             .AddField("Délka", arg.Track.Duration, true)
@@ -103,15 +103,30 @@ public class LavaAudioService : IHostedService
         await arg.Player.TextChannel.SendMessageAsync(embed: embed.Build());
     }
 
-    private async Task OnTrackEndAsync(TrackEndEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
+    private static async Task OnTrackEndAsync(TrackEndEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
-        _logger.LogDebug("Track '{TrackTitle}' ended", arg.Track.Title);
-
         if (arg.Reason is TrackEndReason.Replaced) return;
         
-        if (arg.Player.TrackQueue.TryDequeue(out var nextTrack) && nextTrack != null)
+        switch (arg.Player.TrackQueue.QueueMode)
         {
-            await arg.Player.PlayAsync(nextTrack);
+            case LoopMode.Current:
+                arg.Player.TrackQueue.Enqueue(arg.Track, true);
+                goto case LoopMode.Off;
+            case LoopMode.All:
+                arg.Player.TrackQueue.Enqueue(arg.Track);
+                goto case LoopMode.Off;
+            case LoopMode.Off:
+                if (arg.Player.TrackQueue.TryDequeue(out var nextTrack) && nextTrack != null)
+                {
+                    await arg.Player.PlayAsync(track =>
+                    {
+                        track.Track = nextTrack;
+                        track.StartTime = TimeSpan.FromMilliseconds(1);
+                    });
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
