@@ -82,7 +82,7 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
 
             foreach (var track in player.TrackQueue)
             {
-                descriptionBuilder.Append($"`[{i}]` `{track.Title.Trim().AsSpan( 0, 50)}...` [🔗]({track.Url})");
+                descriptionBuilder.Append($"`[{i}]` `{track.Title.Trim()}` [🔗]({track.Url})");
                 descriptionBuilder.AppendLine($" {track.QueuedBy.Mention}");
                 i++;
             }
