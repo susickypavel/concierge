@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Bot.Entities;
 using Bot.Enums;
 using Bot.TypeConverters;
 using Discord;
@@ -36,31 +35,31 @@ public class InteractionHandler : IHostedService
             switch (result.Error)
             {
                 case InteractionCommandError.UnmetPrecondition:
-                    await ctx.Interaction.RespondAsync($"Unmet Precondition: {result.ErrorReason}");
+                    await ctx.Interaction.RespondAsync($"`Unmet Precondition: {result.ErrorReason}`");
                     break;
                 case InteractionCommandError.UnknownCommand:
-                    await ctx.Interaction.RespondAsync("Unknown command");
+                    await ctx.Interaction.RespondAsync("`Unknown command`");
                     break;
                 case InteractionCommandError.BadArgs:
-                    await ctx.Interaction.RespondAsync("Invalid number or arguments");
+                    await ctx.Interaction.RespondAsync("`Invalid number or arguments`");
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.RespondAsync($"Command exception: {result.ErrorReason}");
+                    await ctx.Interaction.RespondAsync($"`Command exception: {result.ErrorReason}`");
                     break;
                 case InteractionCommandError.Unsuccessful:
-                    await ctx.Interaction.RespondAsync("Command could not be executed");
+                    await ctx.Interaction.RespondAsync("`Command could not be executed`");
                     break;
                 case InteractionCommandError.ConvertFailed:
-                    await ctx.Interaction.RespondAsync(result.ErrorReason, ephemeral: true);
+                    await ctx.Interaction.RespondAsync($"`{result.ErrorReason}`", ephemeral: true);
                     break;
                 case InteractionCommandError.ParseFailed:
-                    _logger.LogCritical("SlashCommand parse error");
+                    _logger.LogCritical("`SlashCommand parse error`");
                     break;
                 case null:
-                    _logger.LogCritical("SlashCommand was unsuccessful but no error was provided");
+                    _logger.LogCritical("`SlashCommand was unsuccessful but no error was provided`");
                     break;
                 default:
-                    _logger.LogCritical("SlashCommand unknown error");
+                    _logger.LogCritical("`SlashCommand unknown error`");
                     break;
             }
         }

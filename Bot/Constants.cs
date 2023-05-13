@@ -3,7 +3,7 @@ using Discord;
 
 namespace Bot;
 
-public class Constants
+public static class Constants
 {
     public static readonly Dictionary<LoopMode, Emoji> LoopModeFlags = new()
     {

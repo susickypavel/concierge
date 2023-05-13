@@ -1,15 +1,9 @@
 ﻿using System.Text.RegularExpressions;
+using Bot.Enums;
 using Discord;
 using Discord.Interactions;
 
 namespace Bot.TypeConverters;
-
-public enum MusicPlatform
-{
-    YouTube,
-    Spotify,
-    Other
-}
 
 public class MusicPlatformUrl : TypeConverter<(MusicPlatform, Uri)>
 {

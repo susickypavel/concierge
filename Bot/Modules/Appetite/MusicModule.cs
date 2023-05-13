@@ -1,4 +1,4 @@
-﻿using Bot.TypeConverters;
+﻿using Bot.Enums;
 using Discord;
 using Discord.Interactions;
 
