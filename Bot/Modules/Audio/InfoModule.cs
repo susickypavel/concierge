@@ -53,47 +53,48 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("queue", "Zobrazí frontu videí")]
     public async Task ShowQueue([Summary(description: "Stránka fronty")] byte page = 1)
     {
-        var (embed, component) = await CreateQueueEmbed(page);
+        if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
+        {
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
+            return;
+        }
 
-        if (component != null)
+        var (embed, component) = CreateQueueEmbed(page, player);
+
+        if (embed != null)
         {
             await RespondAsync(embed: embed, components: component, ephemeral: true);
-        }
-        else
-        {
-            await RespondAsync(embed: embed, ephemeral: true);
         }
     }
 
     [ComponentInteraction("queue-page-select")]
     public async Task HandlePageSelect(string pageValue)
     {
+        if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
+        {
+            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
+            return;
+        }
+        
         var page = Convert.ToByte(pageValue);
 
         var interaction = Context.Interaction as IComponentInteraction;
 
-        async void UpdateEmbed(MessageProperties properties)
+        await interaction!.UpdateAsync(properties =>
         {
-            var (embed, _) = await CreateQueueEmbed(page);
+            var (embed, _) = CreateQueueEmbed(page, player);
             properties.Embed = embed;
-        }
-
-        await interaction!.UpdateAsync(UpdateEmbed);
+        });
     }
 
-    private async Task<(Embed, MessageComponent?)> CreateQueueEmbed(byte page)
+    private (Embed?, MessageComponent?) CreateQueueEmbed(byte page, ExtendedLavaPlayer player)
     {
-        if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
-        {
-            await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
-        }
-
         var pagesCount = Math.Ceiling(player.TrackQueue.Count() / (double) Constants.TracksPerQueuePage);
         var pageOffset = (page - 1) * Constants.TracksPerQueuePage;
-        
+
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
-            .WithTitle($"Fronta videí ({page}/{pagesCount})")
+            .WithTitle($"Fronta videí" + (pagesCount > 1 ? $" ({page} / {pagesCount})" : ""))
             .WithFooter(
                 $"{Constants.LoopModeFlags[player.TrackQueue.QueueMode]} Smyčka: {player.TrackQueue.QueueMode}");
 
@@ -101,7 +102,8 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
 
         if (player.PlayerState != PlayerState.None && player.Track != null)
         {
-            descriptionBuilder.AppendLine($@"**Teď hraje: [{player.Track.Title}]({player.Track.Url}) od {player.Track.QueuedBy.Mention}**
+            descriptionBuilder.AppendLine(
+                $@"**Teď hraje: [{player.Track.Title}]({player.Track.Url}) od {player.Track.QueuedBy.Mention}**
 ");
         }
 
