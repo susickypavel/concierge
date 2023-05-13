@@ -51,24 +51,57 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("queue", "Zobrazí frontu videí")]
-    public async Task ShowQueue()
+    public async Task ShowQueue([Summary(description: "Stránka fronty")] byte page = 1)
+    {
+        var (embed, component) = await CreateQueueEmbed(page);
+
+        if (component != null)
+        {
+            await RespondAsync(embed: embed, components: component, ephemeral: true);
+        }
+        else
+        {
+            await RespondAsync(embed: embed, ephemeral: true);
+        }
+    }
+
+    [ComponentInteraction("queue-page-select")]
+    public async Task HandlePageSelect(string pageValue)
+    {
+        var page = Convert.ToByte(pageValue);
+
+        var interaction = Context.Interaction as IComponentInteraction;
+
+        async void UpdateEmbed(MessageProperties properties)
+        {
+            var (embed, _) = await CreateQueueEmbed(page);
+            properties.Embed = embed;
+        }
+
+        await interaction!.UpdateAsync(UpdateEmbed);
+    }
+
+    private async Task<(Embed, MessageComponent?)> CreateQueueEmbed(byte page)
     {
         if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
         {
             await RespondAsync("`Ty nebo já nejsme připojení do voice.`", ephemeral: true);
-            return;
         }
+
+        var pagesCount = Math.Ceiling(player.TrackQueue.Count() / (double) Constants.TracksPerQueuePage);
+        var pageOffset = (page - 1) * Constants.TracksPerQueuePage;
         
         var embed = new EmbedBuilder()
             .WithColor(new Color(255, 0, 0))
-            .WithTitle("Fronta videí")
-            .WithFooter($"{Constants.LoopModeFlags[player.TrackQueue.QueueMode]} Smyčka: {player.TrackQueue.QueueMode}");
+            .WithTitle($"Fronta videí ({page}/{pagesCount})")
+            .WithFooter(
+                $"{Constants.LoopModeFlags[player.TrackQueue.QueueMode]} Smyčka: {player.TrackQueue.QueueMode}");
 
         var descriptionBuilder = new StringBuilder();
 
         if (player.PlayerState != PlayerState.None && player.Track != null)
         {
-            descriptionBuilder.AppendLine($@"**Teď hraje: [{player.Track.Title}]({player.Track.Url})**
+            descriptionBuilder.AppendLine($@"**Teď hraje: [{player.Track.Title}]({player.Track.Url}) od {player.Track.QueuedBy.Mention}**
 ");
         }
 
@@ -78,18 +111,48 @@ public class InfoModule : InteractionModuleBase<SocketInteractionContext>
         }
         else
         {
-            var i = 1;
+            var tracks = player.TrackQueue
+                .Skip(pageOffset)
+                .Take(Constants.TracksPerQueuePage);
 
-            foreach (var track in player.TrackQueue)
+            var i = pageOffset;
+
+            foreach (var track in tracks)
             {
-                descriptionBuilder.Append($"`[{i}]` `{track.Title.Trim()}` [🔗]({track.Url})");
-                descriptionBuilder.AppendLine($" {track.QueuedBy.Mention}");
+                var title = track.Title
+                    .Trim()
+                    [..Math.Min(track.Title.Length, Constants.TrackTitleMaxLength)]
+                    .PadRight(Constants.TrackTitleMaxLength);
+
+                if (track.Title.Length > Constants.TrackTitleMaxLength)
+                {
+                    title = title[..(Constants.TrackTitleMaxLength - 3)]
+                        .PadRight(Constants.TrackTitleMaxLength, '.');
+                }
+
+                descriptionBuilder.AppendLine($"`[{(i + 1).ToString().PadLeft(2, '0')}] {title}` [`🌐`]({track.Url})");
                 i++;
             }
         }
 
         embed.WithDescription(descriptionBuilder.ToString());
 
-        await RespondAsync(embed: embed.Build(), ephemeral: true);
+        if (pagesCount <= 1) return (embed.Build(), null);
+
+        var menu = new SelectMenuBuilder()
+            .WithPlaceholder("Vyber stránku")
+            .WithCustomId("queue-page-select")
+            .WithMinValues(1)
+            .WithMaxValues(1);
+
+        for (var i = 0; i < pagesCount; i++)
+        {
+            menu.AddOption($"{i + 1}", $"{i + 1}");
+        }
+
+        var component = new ComponentBuilder()
+            .WithSelectMenu(menu);
+
+        return (embed.Build(), component.Build());
     }
 }

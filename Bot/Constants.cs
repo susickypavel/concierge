@@ -11,4 +11,7 @@ public class Constants
         {LoopMode.All, Emoji.Parse(	"\uD83D\uDD01")},
         {LoopMode.Off, Emoji.Parse("\u274C")}
     };
+
+    public const byte TrackTitleMaxLength = 60;
+    public const byte TracksPerQueuePage = 10;
 }

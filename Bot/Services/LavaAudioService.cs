@@ -104,7 +104,7 @@ public class LavaAudioService : IHostedService
 
     private static async Task OnTrackEndAsync(TrackEndEventArg<ExtendedLavaPlayer, ExtendedLavaTrack> arg)
     {
-        if (arg.Reason is TrackEndReason.Replaced or TrackEndReason.Stopped) return;
+        if (arg.Reason is TrackEndReason.Replaced) return;
         
         switch (arg.Player.TrackQueue.QueueMode)
         {
